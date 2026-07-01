@@ -152,7 +152,14 @@ const AppFooter = () => {
       </div>
 
       <div className="container app-footer-bottom">
-        Code by <span>@caubevacauvang</span>
+        Code by{' '}
+        <a
+          href="https://www.facebook.com/huynh.thanh.danh.634137/?locale=vi_VN"
+          target="_blank"
+          rel="noreferrer"
+        >
+          @caubevacauvang
+        </a>
       </div>
     </footer>
   );

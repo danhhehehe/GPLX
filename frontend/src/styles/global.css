@@ -248,9 +248,14 @@ button {
   text-align: center;
 }
 
-.app-footer-bottom span {
+.app-footer-bottom span,
+.app-footer-bottom a {
   color: var(--primary-color);
   font-weight: 900;
+}
+
+.app-footer-bottom a:hover {
+  text-decoration: underline;
 }
 
 .hero-band {
