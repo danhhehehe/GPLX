@@ -223,6 +223,22 @@
   width: 100%;
 }
 
+.review-mode {
+  display: grid;
+  gap: 14px;
+}
+
+.review-layout {
+  width: 100%;
+}
+
+.review-sidebar {
+  position: sticky;
+  top: 88px;
+  max-height: calc(100vh - 110px);
+  overflow: auto;
+}
+
 .exam-finish-button {
   width: 100%;
   min-height: 58px;
@@ -408,6 +424,9 @@
   .exam-sidebar {
     width: 100%;
     max-width: none;
+    position: static;
+    max-height: none;
+    overflow: visible;
   }
 
   .exam-bottom-bar {

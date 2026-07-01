@@ -40,25 +40,27 @@ const ExamResult = () => {
   if (review) {
     return (
       <section className="exam-room-shell review-mode">
-        <div className="exam-main-panel">
-          <ExamReviewPanel result={result} />
-          <ExamQuestionPanel
-            question={currentQuestion}
-            selected={answers[currentQuestion._id] || []}
-            onToggle={null}
-            reviewDetail={currentDetail}
-          />
+        <div className="exam-room-layout review-layout">
+          <main className="exam-main-panel">
+            <ExamReviewPanel result={result} />
+            <ExamQuestionPanel
+              question={currentQuestion}
+              selected={answers[currentQuestion._id] || []}
+              onToggle={null}
+              reviewDetail={currentDetail}
+            />
+          </main>
+          <aside className="exam-sidebar review-sidebar">
+            <ExamAnswerSheet
+              questions={session.questions}
+              answers={answers}
+              currentQuestionIndex={currentIndex}
+              onSelectQuestion={setCurrentIndex}
+              reviewDetails={result.details}
+              reviewMap={reviewMap}
+            />
+          </aside>
         </div>
-        <aside className="exam-sidebar">
-          <ExamAnswerSheet
-            questions={session.questions}
-            answers={answers}
-            currentQuestionIndex={currentIndex}
-            onSelectQuestion={setCurrentIndex}
-            reviewDetails={result.details}
-            reviewMap={reviewMap}
-          />
-        </aside>
         <div className="exam-bottom-bar">
           <button className="exam-button" type="button" onClick={() => setReview(false)}>Quay lại kết quả</button>
           <Link className="exam-button primary" to="/exam">Làm đề khác</Link>
