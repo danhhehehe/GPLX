@@ -1,0 +1,86 @@
+.exam-answer-sheet {
+  width: 100%;
+  background: var(--surface-muted);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: 12px;
+  box-sizing: border-box;
+  overflow: visible;
+}
+
+.exam-sheet-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.exam-sheet-column {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.exam-sheet-row {
+  display: grid;
+  grid-template-columns: 56px 1fr;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 8px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-color);
+  background: var(--card-color);
+  color: var(--text-color);
+  cursor: pointer;
+  text-align: left;
+}
+
+.exam-sheet-row:hover { border-color: var(--primary-color); background: var(--primary-soft-color); }
+
+.exam-sheet-row.active { background: var(--danger-soft-color); border-color: var(--danger-color); color: var(--heading-color); }
+
+.exam-sheet-row.answered:not(.active):not(.review-correct):not(.review-wrong):not(.review-unanswered) { background: color-mix(in srgb, var(--primary-color) 6%, var(--card-color)); }
+.exam-sheet-row.review-correct { background: color-mix(in srgb, var(--color-success) 12%, var(--card-color)); border-color: var(--color-success); }
+.exam-sheet-row.review-wrong { background: color-mix(in srgb, var(--color-danger) 12%, var(--card-color)); border-color: var(--color-danger); }
+.exam-sheet-row.review-unanswered { background: color-mix(in srgb, var(--color-warning) 12%, var(--card-color)); border-color: var(--color-warning); }
+
+.exam-sheet-number { display:flex; align-items:center; justify-content:center; font-size:0.95rem; font-weight:900; min-width:42px; height:32px; border-radius:var(--radius-sm); background: var(--surface-muted); color: var(--heading-color); }
+.exam-sheet-row.active .exam-sheet-number { background: var(--danger-color); color: var(--on-primary-color); }
+
+.exam-sheet-options {
+  display: grid;
+  gap: 2px;
+}
+
+.exam-sheet-option-labels,
+.exam-sheet-option-boxes {
+  display: flex;
+  gap: 4px;
+  justify-content: flex-start;
+}
+
+.exam-sheet-option-labels { font-size:0.68rem; color:var(--color-muted); font-weight:700; text-align:center; }
+
+.exam-sheet-row.active .exam-sheet-option-labels {
+  color: var(--danger-color);
+}
+
+.exam-sheet-option-boxes {
+  min-height: 16px;
+}
+
+.exam-sheet-box { width:20px; height:18px; border-radius:4px; border:1px solid var(--border-color); background: var(--input-bg); color:var(--text-color); box-sizing:border-box; cursor:pointer; padding:0; display:grid; place-items:center; font-size:0.68rem; font-weight:900; line-height:1; }
+.exam-sheet-box.selected { background: var(--primary-color); border-color: color-mix(in srgb, var(--primary-color) 80%, black 20%); }
+.exam-sheet-box:disabled { cursor:default; opacity:1; }
+.exam-sheet-box:not(:disabled):hover { border-color: var(--primary-color); }
+.exam-sheet-row.review-correct .exam-sheet-box.selected { background: var(--color-success); border-color: var(--color-success); }
+.exam-sheet-row.review-wrong .exam-sheet-box.selected { background: var(--color-danger); border-color: color-mix(in srgb, var(--color-danger) 80%, black 20%); }
+
+@media (max-width: 980px) {
+  .exam-answer-sheet {
+    max-width: 100%;
+  }
+
+  .exam-sheet-grid {
+    grid-template-columns: 1fr;
+  }
+}

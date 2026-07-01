@@ -1,0 +1,18 @@
+{
+  "name": "ltgplx",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "concurrently \"npm run dev --prefix backend\" \"npm run dev --prefix frontend\"",
+    "install:all": "npm install --prefix backend && npm install --prefix frontend",
+    "seed": "npm run seed --prefix backend",
+    "seed:traffic-signs": "npm run seed:traffic-signs --prefix backend",
+    "seed:licenses": "npm run seed:licenses --prefix backend",
+    "seed:exam-sets": "npm run seed:exam-sets --prefix backend",
+    "fix:duplicates": "npm run fix:duplicates --prefix backend",
+    "audit": "npm audit --prefix backend && npm audit --prefix frontend"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.2"
+  }
+}

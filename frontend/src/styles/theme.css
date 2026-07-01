@@ -1,0 +1,277 @@
+@import url('https://fonts.googleapis.com/css2?family=Public+Sans:wght@300;400;600;700;800&display=swap');
+
+:root,
+[data-theme="light"] {
+  color-scheme: light;
+  --bg-color: #f5f7fb;
+  --text-color: #182230;
+  --card-color: #ffffff;
+  --border-color: #d8e1ed;
+  --primary-color: #1d5fd6;
+  --button-color: #1d5fd6;
+  --input-bg: #ffffff;
+  --surface-strong: #ffffff;
+  --surface-muted: #eef3f9;
+  --heading-color: #101828;
+  --muted-color: #667085;
+  --danger-color: #d92d20;
+  --success-color: #12805c;
+  --warning-color: #b54708;
+  --on-primary-color: #ffffff;
+  --primary-soft-color: #eaf1ff;
+  --success-soft-color: #eaf7f1;
+  --danger-soft-color: #fff1f0;
+  --warning-soft-color: #fff4e5;
+  --accent-color: #0f766e;
+  --accent-soft-color: #e6f4f1;
+  --preset-blue: #2563eb;
+  --preset-green: #16a34a;
+  --preset-purple: #7c3aed;
+  --preset-red: #ef4444;
+  --preset-orange: #f97316;
+  --preset-pink: #ec4899;
+  --overlay-color: color-mix(in srgb, var(--text-color) 52%, transparent);
+  --shadow-color: color-mix(in srgb, var(--text-color) 9%, transparent);
+  --focus-ring-color: color-mix(in srgb, var(--primary-color) 26%, transparent);
+  --color-bg: var(--bg-color);
+  --color-surface: var(--surface-strong);
+  --color-surface-soft: var(--surface-muted);
+  --color-text: var(--text-color);
+  --color-heading: var(--heading-color);
+  --color-muted: var(--muted-color);
+  --color-border: var(--border-color);
+  --color-primary: var(--primary-color);
+  --color-primary-soft: var(--primary-soft-color);
+  --color-danger: var(--danger-color);
+  --color-success: var(--success-color);
+  --color-warning: var(--warning-color);
+  --font-family: 'Public Sans', Inter, Arial, sans-serif;
+  --font-size-base: 16px;
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 8px;
+  --transition-normal: 0.25s ease;
+  --motion-ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --motion-duration-fast: 160ms;
+  --motion-duration-normal: 220ms;
+  --motion-duration-slow: 280ms;
+  --motion-page-y: 10px;
+  --motion-page-scale: 0.99;
+  --motion-card-lift: -4px;
+  --motion-active-scale: 0.98;
+  --motion-icon-scale: 1.08;
+  --page-padding: 24px;
+  --card-padding: 20px;
+}
+
+[data-theme="dark"] {
+  color-scheme: dark;
+  --bg-color: #101418;
+  --text-color: #edf2f7;
+  --card-color: #1a2027;
+  --border-color: #344054;
+  --primary-color: #8ab4ff;
+  --button-color: #8ab4ff;
+  --input-bg: #202833;
+  --surface-strong: var(--card-color);
+  --surface-muted: #232c37;
+  --heading-color: #f8fafc;
+  --muted-color: #a8b3c4;
+  --danger-color: #ff8a80;
+  --success-color: #79d9a4;
+  --warning-color: #ffd27a;
+  --on-primary-color: #101418;
+  --primary-soft-color: #20334f;
+  --success-soft-color: #1b342b;
+  --danger-soft-color: #3a2524;
+  --warning-soft-color: #382f1f;
+  --accent-color: #5eead4;
+  --accent-soft-color: #173c39;
+  --overlay-color: color-mix(in srgb, var(--bg-color) 68%, transparent);
+  --shadow-color: color-mix(in srgb, black 24%, transparent);
+  --focus-ring-color: color-mix(in srgb, var(--primary-color) 32%, transparent);
+}
+
+[data-motion="off"] {
+  --motion-duration-fast: 1ms;
+  --motion-duration-normal: 1ms;
+  --motion-duration-slow: 1ms;
+  --motion-page-y: 0;
+  --motion-page-scale: 1;
+  --motion-card-lift: 0;
+  --motion-active-scale: 1;
+  --motion-icon-scale: 1;
+}
+
+[data-motion="soft"] {
+  --motion-duration-fast: 140ms;
+  --motion-duration-normal: 180ms;
+  --motion-duration-slow: 220ms;
+  --motion-page-y: 6px;
+  --motion-card-lift: -2px;
+  --motion-icon-scale: 1.04;
+}
+
+[data-motion="strong"] {
+  --motion-duration-fast: 180ms;
+  --motion-duration-normal: 250ms;
+  --motion-duration-slow: 280ms;
+  --motion-page-y: 14px;
+  --motion-card-lift: -7px;
+  --motion-icon-scale: 1.14;
+}
+
+html {
+  background: var(--bg-color);
+}
+
+body {
+  background: var(--bg-color);
+  color: var(--text-color);
+  font-family: var(--font-family);
+  font-size: var(--font-size-base);
+  line-height: 1.55;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  transition: background-color var(--transition-normal), color var(--transition-normal);
+}
+
+body,
+button,
+input,
+select,
+textarea,
+.site-header,
+.site-footer,
+.app-card,
+.card,
+.question-card,
+.exam-card,
+.traffic-card,
+.traffic-sign-card,
+.license-card,
+.memory-section,
+.study-panel,
+.exam-sidebar,
+.exam-main-panel,
+.exam-bottom-bar {
+  transition:
+    background-color var(--transition-normal),
+    color var(--transition-normal),
+    border-color var(--transition-normal);
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  color: var(--heading-color);
+  letter-spacing: 0;
+}
+
+p,
+span,
+li {
+  color: inherit;
+}
+
+.text-muted,
+.muted,
+.hint-text,
+.explanation,
+.question-meta,
+.traffic-group-label,
+.stat-card span,
+.license-meta,
+.license-description {
+  color: var(--muted-color);
+}
+
+.app-card,
+.card,
+.question-card,
+.exam-card,
+.traffic-card,
+.traffic-sign-card,
+.license-card,
+.memory-section,
+.study-panel,
+.warning-band,
+.result-hero,
+.stat-card,
+.image-check-panel,
+.license-actions,
+.alert,
+.loading,
+.empty {
+  background: var(--card-color);
+  border: 1px solid var(--border-color);
+  color: var(--text-color);
+}
+
+input,
+select,
+textarea {
+  background: var(--input-bg);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  color: var(--text-color);
+  padding: 10px 12px;
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 4px var(--focus-ring-color);
+  outline: none;
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: var(--muted-color);
+}
+
+button {
+  color: inherit;
+}
+
+.btn,
+.pagination button,
+.secondary,
+.theme-toggle-button {
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  background: var(--card-color);
+  color: var(--text-color);
+  font-weight: 800;
+  line-height: 1.2;
+  padding: 10px 16px;
+}
+
+.btn.primary,
+.btn:hover,
+.pagination button:hover,
+.theme-toggle-button:hover {
+  background: var(--button-color);
+  border-color: var(--button-color);
+  color: var(--on-primary-color);
+}
+
+.btn.secondary,
+.secondary {
+  background: var(--surface-muted);
+  color: var(--text-color);
+}
+
+.theme-toggle-button {
+  min-width: 94px;
+  white-space: nowrap;
+}
+
+:focus-visible {
+  outline: 3px solid var(--focus-ring-color);
+  outline-offset: 2px;
+}

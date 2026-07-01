@@ -1,0 +1,76 @@
+.memory-tips-page {
+  padding-top: 20px;
+}
+
+.memory-tips-hero {
+  background: var(--primary-soft-color);
+  border: 1px solid var(--border-color);
+  padding: 20px;
+  border-radius: var(--radius-md);
+  margin-bottom: 18px;
+  box-shadow: 0 8px 22px var(--shadow-color);
+}
+
+.memory-tips-toolbar {
+  display: flex;
+  gap: 24px;
+}
+
+.memory-section {
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  background: var(--card-color);
+  box-shadow: 0 8px 22px var(--shadow-color);
+}
+
+.memory-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  padding: 14px;
+  background: var(--card-color);
+  border: none;
+  color: var(--text-color);
+}
+
+.memory-header:hover {
+  background: var(--primary-soft-color);
+}
+
+.memory-index {
+  display: inline-flex;
+  width: 34px;
+  height: 34px;
+  background: var(--primary-color);
+  color: var(--on-primary-color);
+  border-radius: var(--radius-sm);
+  align-items: center;
+  justify-content: center;
+  margin-right: 8px;
+}
+
+.memory-content {
+  padding: 14px 16px 16px;
+  background: var(--card-color);
+  border-top: 1px solid var(--border-color);
+}
+
+.content-block {
+  margin: 8px 0;
+}
+
+.memory-search {
+  margin-right: 12px;
+}
+
+.memory-action-button {
+  margin-left: 8px;
+}
+
+@media (max-width: 720px) {
+  .memory-tips-toolbar {
+    flex-direction: column;
+  }
+}
