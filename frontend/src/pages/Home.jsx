@@ -84,12 +84,46 @@ const Home = () => {
   const [summary, setSummary] = useState({ total: 0, point: 0, images: 0 });
   const [licenses, setLicenses] = useState([]);
   const [selectedLicense, setSelectedLicense] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [statsLoading, setStatsLoading] = useState(true);
+  const [licensesLoading, setLicensesLoading] = useState(true);
+  const [showClips, setShowClips] = useState(false);
+
+  const routeLicense = String(searchParams.get('licenseType') || '').toUpperCase();
 
   useEffect(() => {
-    Promise.all([questionApi.getStatistics(), licenseApi.getLicenses()])
-      .then(([stats, licenseItems]) => {
-        const routeLicense = String(searchParams.get('licenseType') || '').toUpperCase();
+    let active = true;
+
+    setStatsLoading(true);
+    questionApi.getStatistics()
+      .then((stats) => {
+        if (!active) return;
+
+        setSummary({
+          total: stats.totalQuestions || 0,
+          point: stats.totalPointDeduction || 0,
+          images: stats.totalWithImages || 0
+        });
+      })
+      .catch(() => {
+        if (active) setSummary({ total: 0, point: 0, images: 0 });
+      })
+      .finally(() => {
+        if (active) setStatsLoading(false);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  useEffect(() => {
+    let active = true;
+
+    setLicensesLoading(true);
+    licenseApi.getLicenses()
+      .then((licenseItems) => {
+        if (!active) return;
+
         const savedLicense = getStoredLicense().toUpperCase();
         const preferredCode = routeLicense || savedLicense || 'B';
         const preferredLicense = licenseItems.find((item) => item.code === preferredCode)
@@ -97,19 +131,41 @@ const Home = () => {
           || licenseItems[0]
           || null;
 
-        setSummary({
-          total: stats.totalQuestions || 0,
-          point: stats.totalPointDeduction || 0,
-          images: stats.totalWithImages || 0
-        });
         setLicenses(licenseItems);
         setSelectedLicense(preferredLicense);
         if (preferredLicense?.code) {
           storeSelectedLicense(preferredLicense.code);
         }
       })
-      .finally(() => setLoading(false));
-  }, [searchParams]);
+      .catch(() => {
+        if (!active) return;
+
+        setLicenses([]);
+        setSelectedLicense(null);
+      })
+      .finally(() => {
+        if (active) setLicensesLoading(false);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [routeLicense]);
+
+  useEffect(() => {
+    if (licensesLoading) return undefined;
+
+    setShowClips(false);
+
+    const show = () => setShowClips(true);
+    if ('requestIdleCallback' in window) {
+      const idleId = window.requestIdleCallback(show, { timeout: 1200 });
+      return () => window.cancelIdleCallback(idleId);
+    }
+
+    const timeoutId = window.setTimeout(show, 450);
+    return () => window.clearTimeout(timeoutId);
+  }, [licensesLoading]);
 
   const selectedCode = selectedLicense?.code || '';
   const dashboard = useMemo(() => createDashboardItems(selectedCode), [selectedCode]);
@@ -139,7 +195,7 @@ const Home = () => {
             </div>
           </div>
           <div className="stats-panel">
-            {loading ? <Loading text="Đang lấy dữ liệu..." /> : (
+            {statsLoading ? <Loading text="Đang lấy dữ liệu..." /> : (
               <>
                 <div>
                   <strong>{summary.total}</strong>
@@ -164,7 +220,7 @@ const Home = () => {
           <p className="eyebrow">Chọn hạng bằng lái</p>
           <h1>Học đúng nhóm câu hỏi của hạng bạn cần.</h1>
         </div>
-        {loading ? <Loading /> : (
+        {licensesLoading ? <Loading /> : (
           <>
             <LicenseClassGrid licenses={licenses} selectedCode={selectedCode} onSelect={handleSelectLicense} />
             {selectedLicense && (
@@ -205,7 +261,7 @@ const Home = () => {
       </section>
 
       <section className="container page-stack">
-        <TrafficSafetyClips />
+        {showClips ? <TrafficSafetyClips /> : <div className="traffic-safety-clips-placeholder" aria-hidden="true" />}
       </section>
     </section>
   );

@@ -1,6 +1,12 @@
 import Question from '../models/Question.js';
 import { asyncHandler } from '../middleware/error.middleware.js';
 
+const STATISTICS_CACHE_TTL_MS = Number(process.env.QUESTION_STATISTICS_CACHE_TTL_MS || 5 * 60 * 1000);
+let statisticsCache = {
+  expiresAt: 0,
+  data: null
+};
+
 const escapeRegex = (value) => String(value).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
 const buildFilter = (query = {}, extra = {}) => {
@@ -129,6 +135,12 @@ export const getImageCheck = asyncHandler(async (req, res) => {
 });
 
 export const getQuestionStatistics = asyncHandler(async (req, res) => {
+  if (statisticsCache.data && statisticsCache.expiresAt > Date.now()) {
+    res.set('Cache-Control', 'public, max-age=60');
+    res.json(statisticsCache.data);
+    return;
+  }
+
   const [
     totalQuestions,
     totalA1,
@@ -147,7 +159,7 @@ export const getQuestionStatistics = asyncHandler(async (req, res) => {
     Question.distinct('licenseTypes')
   ]);
 
-  res.json({
+  const data = {
     totalQuestions,
     totalA1,
     totalAll,
@@ -157,5 +169,13 @@ export const getQuestionStatistics = asyncHandler(async (req, res) => {
     totalLicenseTypes: licenseTypes.filter(Boolean).length,
     categories: categories.filter(Boolean).sort((a, b) => a.localeCompare(b, 'vi')),
     licenseTypes: licenseTypes.filter(Boolean).sort((a, b) => a.localeCompare(b, 'vi'))
-  });
+  };
+
+  statisticsCache = {
+    expiresAt: Date.now() + STATISTICS_CACHE_TTL_MS,
+    data
+  };
+
+  res.set('Cache-Control', 'public, max-age=60');
+  res.json(data);
 });

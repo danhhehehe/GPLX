@@ -1,0 +1,48 @@
+Được. Đây là các lệnh để bạn tự cập nhật/deploy lại sau này.
+Cập Nhật Code Lên Web
+git status
+git add .
+git commit -m "Update GPLX exam logic and images"
+git push origin main
+Sau khi push:
+GitHub Pages sẽ tự chạy workflow deploy frontend.
+Render sẽ tự redeploy backend nếu đang bật Auto Deploy.
+Kiểm Tra Frontend Trước Khi Push
+cd frontend
+npm run build
+cd ..
+Kiểm Tra Logic Tạo Đề
+npm run validate:exams
+Seed Lại Dữ Liệu Câu Hỏi Local
+npm run seed
+Tạo Lại Bộ Đề Cố Định Local
+npm run seed:exam-sets
+Seed Lại Toàn Bộ Local
+npm run seed:all
+Kiểm Tra Backend Production
+curl.exe https://gplx-api-xjfq.onrender.com/health
+curl.exe https://gplx-api-xjfq.onrender.com/api/questions/image-check
+Kiểm Tra Web
+https://danhhehehe.github.io/GPLX/
+Nếu cần cập nhật database trên Render production, vào Render Shell của service backend rồi chạy:
+npm run seed
+npm run seed:exam-sets
+Hoặc seed toàn bộ:
+npm run seed:all
+
+
+
+
+Frontend GitHub Pages tự build/deploy qua workflow .github/workflows/deploy-pages.yml.
+Backend Render tự redeploy nếu Render đang bật Auto Deploy cho branch main.
+Quy trình chuẩn sau khi tự sửa:
+npm run validate:exams
+npm run build --prefix frontend
+
+git add .
+git commit -m "Mo ta thay doi"
+git push origin main
+Sau push, đợi khoảng 1-3 phút rồi mở lại web. Nếu chưa thấy đổi, nhấn Ctrl + F5.
+Lưu ý: nếu bạn chỉ sửa database/dữ liệu seed, push code không tự cập nhật DB. Khi đó cần vào Render Shell chạy thêm:
+npm run seed
+npm run seed:exam-sets

@@ -937,6 +937,10 @@ h3 {
   gap: 18px;
 }
 
+.traffic-safety-clips-placeholder {
+  min-height: 120px;
+}
+
 .traffic-safety-clips-heading {
   margin-bottom: 4px;
 }
