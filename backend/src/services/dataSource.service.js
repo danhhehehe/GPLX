@@ -5,6 +5,7 @@ import Question from '../models/Question.js';
 import LicenseClass from '../models/LicenseClass.js';
 import TrafficSign from '../models/TrafficSign.js';
 import DataSourceStatus from '../models/DataSourceStatus.js';
+import ExamSet from '../models/ExamSet.js';
 import { normalizeQuestion, normalizeImageUrl, seedQuestions } from './seed.service.js';
 import { seedLicenses } from './license.service.js';
 import { seedTrafficSigns } from './traffic-sign.service.js';
@@ -321,7 +322,7 @@ export const getHealthReport = async () => {
     Question.countDocuments(),
     TrafficSign.countDocuments(),
     LicenseClass.countDocuments(),
-    0
+    ExamSet.countDocuments()
   ]);
 
   const statuses = await DataSourceStatus.find().sort({ type: 1, sourceName: 1 });
