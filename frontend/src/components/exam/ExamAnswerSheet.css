@@ -21,6 +21,7 @@
 }
 
 .exam-sheet-row {
+  position: relative;
   display: grid;
   grid-template-columns: 56px 1fr;
   align-items: center;
@@ -42,6 +43,29 @@
 .exam-sheet-row.review-correct { background: color-mix(in srgb, var(--color-success) 12%, var(--card-color)); border-color: var(--color-success); }
 .exam-sheet-row.review-wrong { background: color-mix(in srgb, var(--color-danger) 12%, var(--card-color)); border-color: var(--color-danger); }
 .exam-sheet-row.review-unanswered { background: color-mix(in srgb, var(--color-warning) 12%, var(--card-color)); border-color: var(--color-warning); }
+.exam-sheet-row.review-point-deduction {
+  grid-template-columns: 56px auto 1fr;
+  background: color-mix(in srgb, var(--danger-color) 30%, var(--card-color));
+  border-color: color-mix(in srgb, var(--danger-color) 82%, black 18%);
+  box-shadow: inset 4px 0 0 color-mix(in srgb, var(--danger-color) 86%, black 14%);
+}
+.exam-sheet-row.review-point-deduction .exam-sheet-number {
+  background: color-mix(in srgb, var(--danger-color) 86%, black 14%);
+  color: var(--on-primary-color);
+}
+
+.exam-sheet-critical-icon {
+  width: 20px;
+  height: 20px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--danger-color) 86%, black 14%);
+  color: var(--on-primary-color);
+  font-size: 0.78rem;
+  font-weight: 1000;
+  line-height: 1;
+}
 
 .exam-sheet-number { display:flex; align-items:center; justify-content:center; font-size:0.95rem; font-weight:900; min-width:42px; height:32px; border-radius:var(--radius-sm); background: var(--surface-muted); color: var(--heading-color); }
 .exam-sheet-row.active .exam-sheet-number { background: var(--danger-color); color: var(--on-primary-color); }
@@ -74,6 +98,7 @@
 .exam-sheet-box:not(:disabled):hover { border-color: var(--primary-color); }
 .exam-sheet-row.review-correct .exam-sheet-box.selected { background: var(--color-success); border-color: var(--color-success); }
 .exam-sheet-row.review-wrong .exam-sheet-box.selected { background: var(--color-danger); border-color: color-mix(in srgb, var(--color-danger) 80%, black 20%); }
+.exam-sheet-row.review-point-deduction .exam-sheet-box.selected { background: color-mix(in srgb, var(--danger-color) 82%, black 18%); border-color: color-mix(in srgb, var(--danger-color) 72%, black 28%); }
 
 @media (max-width: 980px) {
   .exam-answer-sheet {

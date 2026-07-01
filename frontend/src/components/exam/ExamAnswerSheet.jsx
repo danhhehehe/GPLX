@@ -35,17 +35,20 @@ function getQuestionId(question, fallbackIndex) {
   return String(question?._id || question?.id || question?.questionHash || fallbackIndex).trim();
 }
 
+function getReviewDetail(questionId, reviewDetails) {
+  return reviewDetails?.find((item) => String(item.questionId) === String(questionId));
+}
+
 function getReviewStatus(questionId, reviewMap, reviewDetails) {
   if (reviewMap && reviewMap[questionId]) {
     return reviewMap[questionId];
   }
-  if (!reviewDetails) {
-    return '';
-  }
-  const detail = reviewDetails.find((item) => String(item.questionId) === String(questionId));
+
+  const detail = getReviewDetail(questionId, reviewDetails);
   if (!detail) {
     return '';
   }
+
   const selected = Array.isArray(detail.selectedAnswer) ? detail.selectedAnswer : [];
   return detail.isCorrect ? 'correct' : selected.length ? 'wrong' : 'unanswered';
 }
@@ -53,23 +56,25 @@ function getReviewStatus(questionId, reviewMap, reviewDetails) {
 function AnswerSheetRow({
   question,
   index,
+  questionId,
   selectedAnswer,
   isActive,
   reviewStatus,
+  reviewDetail,
   onSelectQuestion,
   onToggleAnswer
 }) {
   const selected = normalizeSelectedAnswer(selectedAnswer);
   const options = getQuestionOptions(question);
   const canToggleAnswer = typeof onToggleAnswer === 'function' && !reviewStatus;
+  const isPointDeduction = Boolean(question?.isPointDeduction || reviewDetail?.isPointDeduction);
   const rowClass = [
     'exam-sheet-row',
     isActive ? 'active' : '',
     selected.length > 0 ? 'answered' : '',
-    reviewStatus ? `review-${reviewStatus}` : ''
-  ]
-    .filter(Boolean)
-    .join(' ');
+    reviewStatus ? `review-${reviewStatus}` : '',
+    reviewStatus && isPointDeduction ? 'review-point-deduction' : ''
+  ].filter(Boolean).join(' ');
 
   return (
     <div
@@ -85,6 +90,9 @@ function AnswerSheetRow({
       tabIndex={0}
     >
       <span className="exam-sheet-number">Câu {index + 1}</span>
+      {reviewStatus && isPointDeduction && (
+        <span className="exam-sheet-critical-icon" title="Câu điểm liệt" aria-label="Câu điểm liệt">!</span>
+      )}
       <span className="exam-sheet-options">
         <span className="exam-sheet-option-labels">
           {options.map((key, optionIndex) => (
@@ -145,14 +153,17 @@ export default function ExamAnswerSheet({
       {columnQuestions.map((question, localIndex) => {
         const realIndex = startIndex + localIndex;
         const questionId = getQuestionId(question, realIndex);
+        const reviewDetail = getReviewDetail(questionId, reviewDetails);
         return (
           <AnswerSheetRow
             key={questionId}
             question={question}
             index={realIndex}
+            questionId={questionId}
             selectedAnswer={answers[questionId]}
             isActive={realIndex === activeIndex}
             reviewStatus={getReviewStatus(questionId, normalizedReviewMap, reviewDetails)}
+            reviewDetail={reviewDetail}
             onSelectQuestion={handleSelectQuestion}
             onToggleAnswer={onToggleAnswer}
           />

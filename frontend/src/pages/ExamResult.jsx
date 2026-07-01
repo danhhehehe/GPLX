@@ -55,6 +55,7 @@ const ExamResult = () => {
             answers={answers}
             currentQuestionIndex={currentIndex}
             onSelectQuestion={setCurrentIndex}
+            reviewDetails={result.details}
             reviewMap={reviewMap}
           />
         </aside>
