@@ -56,7 +56,6 @@ function getReviewStatus(questionId, reviewMap, reviewDetails) {
 function AnswerSheetRow({
   question,
   index,
-  questionId,
   selectedAnswer,
   isActive,
   reviewStatus,
@@ -65,6 +64,7 @@ function AnswerSheetRow({
   onToggleAnswer
 }) {
   const selected = normalizeSelectedAnswer(selectedAnswer);
+  const correct = normalizeSelectedAnswer(reviewDetail?.correctAnswer);
   const options = getQuestionOptions(question);
   const canToggleAnswer = typeof onToggleAnswer === 'function' && !reviewStatus;
   const isPointDeduction = Boolean(question?.isPointDeduction || reviewDetail?.isPointDeduction);
@@ -104,9 +104,12 @@ function AnswerSheetRow({
             <button
               key={key}
               type="button"
-              className={['exam-sheet-box', selected.includes(key) ? 'selected' : '']
-                .filter(Boolean)
-                .join(' ')}
+              className={[
+                'exam-sheet-box',
+                selected.includes(key) ? 'selected' : '',
+                reviewStatus && correct.includes(key) ? 'correct-answer' : '',
+                reviewStatus && selected.includes(key) && !correct.includes(key) ? 'wrong-answer' : ''
+              ].filter(Boolean).join(' ')}
               aria-label={`Chọn đáp án ${key.toUpperCase()} cho câu ${index + 1}`}
               disabled={!canToggleAnswer}
               onClick={(event) => {
@@ -159,7 +162,6 @@ export default function ExamAnswerSheet({
             key={questionId}
             question={question}
             index={realIndex}
-            questionId={questionId}
             selectedAnswer={answers[questionId]}
             isActive={realIndex === activeIndex}
             reviewStatus={getReviewStatus(questionId, normalizedReviewMap, reviewDetails)}

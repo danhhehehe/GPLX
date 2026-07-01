@@ -41,7 +41,7 @@
 
 .exam-sheet-row.answered:not(.active):not(.review-correct):not(.review-wrong):not(.review-unanswered) { background: color-mix(in srgb, var(--primary-color) 6%, var(--card-color)); }
 .exam-sheet-row.review-correct { background: color-mix(in srgb, var(--color-success) 12%, var(--card-color)); border-color: var(--color-success); }
-.exam-sheet-row.review-wrong { background: color-mix(in srgb, var(--color-danger) 12%, var(--card-color)); border-color: var(--color-danger); }
+.exam-sheet-row.review-wrong { background: color-mix(in srgb, var(--color-warning) 16%, var(--card-color)); border-color: var(--color-warning); }
 .exam-sheet-row.review-unanswered { background: color-mix(in srgb, var(--color-warning) 12%, var(--card-color)); border-color: var(--color-warning); }
 .exam-sheet-row.review-point-deduction {
   grid-template-columns: 56px auto 1fr;
@@ -96,8 +96,9 @@
 .exam-sheet-box.selected { background: var(--primary-color); border-color: color-mix(in srgb, var(--primary-color) 80%, black 20%); }
 .exam-sheet-box:disabled { cursor:default; opacity:1; }
 .exam-sheet-box:not(:disabled):hover { border-color: var(--primary-color); }
-.exam-sheet-row.review-correct .exam-sheet-box.selected { background: var(--color-success); border-color: var(--color-success); }
-.exam-sheet-row.review-wrong .exam-sheet-box.selected { background: var(--color-danger); border-color: color-mix(in srgb, var(--color-danger) 80%, black 20%); }
+.exam-sheet-row.review-correct .exam-sheet-box.selected,
+.exam-sheet-box.correct-answer { background: var(--color-success); border-color: var(--color-success); }
+.exam-sheet-box.wrong-answer { background: var(--color-danger); border-color: color-mix(in srgb, var(--color-danger) 80%, black 20%); }
 .exam-sheet-row.review-point-deduction .exam-sheet-box.selected { background: color-mix(in srgb, var(--danger-color) 82%, black 18%); border-color: color-mix(in srgb, var(--danger-color) 72%, black 28%); }
 
 @media (max-width: 980px) {

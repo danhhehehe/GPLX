@@ -83,7 +83,7 @@ const ExamResult = () => {
         <p><b>Hạng GPLX:</b> {session.licenseType}</p>
         <p><b>Bộ đề:</b> {session.setName || session.setId || 'Ngẫu nhiên'}</p>
         <p><b>Tổng số câu:</b> {finalResult.totalQuestions}</p>
-        <p><b>Đúng:</b> {finalResult.correctCount} • <b>Sai:</b> {finalResult.wrongCount} • <b>Chưa làm:</b> {finalResult.unansweredCount}</p>
+        <p><b>Đúng:</b> {finalResult.correctCount} - <b>Sai:</b> {finalResult.wrongCount} - <b>Chưa làm:</b> {finalResult.unansweredCount}</p>
         <p><b>Điểm đạt:</b> {finalResult.passingScore}</p>
       </div>
       <div className="candidate-actions">

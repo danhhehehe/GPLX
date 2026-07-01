@@ -2,7 +2,7 @@ import axios from 'axios';
 
 const axiosClient = axios.create({
   baseURL: import.meta.env.VITE_API_URL || import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api',
-  timeout: 20000
+  timeout: 12000
 });
 
 const pendingGetRequests = new Map();
@@ -28,9 +28,12 @@ axiosClient.interceptors.response.use(
   (error) => {
     const status = error.response?.status;
     const serverMessage = error.response?.data?.message;
-    const message = status && status < 500
-      ? serverMessage || 'Yêu cầu không hợp lệ.'
-      : 'Không thể kết nối máy chủ. Vui lòng thử lại sau.';
+    const timedOut = error.code === 'ECONNABORTED';
+    const message = timedOut
+      ? 'Máy chủ phản hồi quá lâu. Vui lòng thử lại.'
+      : status && status < 500
+        ? serverMessage || 'Yêu cầu không hợp lệ.'
+        : 'Không thể kết nối máy chủ. Vui lòng thử lại sau.';
     return Promise.reject(new Error(message));
   }
 );

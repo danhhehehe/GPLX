@@ -17,6 +17,7 @@ const ExamRoom = () => {
   const [remainingSeconds, setRemainingSeconds] = useState(null);
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState('');
   const submittingRef = useRef(false);
 
   useEffect(() => {
@@ -29,7 +30,6 @@ const ExamRoom = () => {
     const parsed = JSON.parse(saved);
     setSession(parsed);
     setAnswers(savedAnswers ? JSON.parse(savedAnswers) : {});
-    // Robust initial remaining seconds: prefer stored value, fallback to session duration, then default 19 minutes
     const stored = sessionStorage.getItem('gplx_exam_remaining');
     const durationFromSession = Number(parsed?.durationMinutes) ? Number(parsed.durationMinutes) * 60 : null;
     let initialSeconds = null;
@@ -43,13 +43,12 @@ const ExamRoom = () => {
 
   useEffect(() => {
     if (remainingSeconds === null || submitting) return undefined;
-    if (remainingSeconds <= 0) return undefined; // do not start when already zero
+    if (remainingSeconds <= 0) return undefined;
 
     const timer = window.setInterval(() => {
       setRemainingSeconds((prev) => {
         if (prev === null) return prev;
         if (prev <= 1) {
-          // reached zero: stop and open confirm
           setConfirmOpen(true);
           return 0;
         }
@@ -60,7 +59,6 @@ const ExamRoom = () => {
     return () => window.clearInterval(timer);
   }, [remainingSeconds, submitting]);
 
-  // persist remainingSeconds to sessionStorage whenever it changes (number)
   useEffect(() => {
     if (remainingSeconds === null) return;
     sessionStorage.setItem('gplx_exam_remaining', String(remainingSeconds));
@@ -108,6 +106,7 @@ const ExamRoom = () => {
     if (!session || submittingRef.current) return;
     submittingRef.current = true;
     setSubmitting(true);
+    setError('');
     try {
       const payload = await examApi.submitExam({
         sessionId: session.sessionId,
@@ -121,6 +120,8 @@ const ExamRoom = () => {
       });
       sessionStorage.setItem('gplx_exam_result', JSON.stringify({ session, answers, result: payload }));
       navigate('/exam/result');
+    } catch (err) {
+      setError(err.message || 'Không thể nộp bài. Vui lòng thử lại.');
     } finally {
       submittingRef.current = false;
       setSubmitting(false);
@@ -133,6 +134,7 @@ const ExamRoom = () => {
     <section className="exam-room-shell">
       <div className="exam-room-layout">
         <main className="exam-main-panel">
+          {error && <p className="exam-error-message">{error}</p>}
           <ExamQuestionPanel question={currentQuestion} selected={currentAnswer} onToggle={toggleAnswer} />
         </main>
 
@@ -154,7 +156,7 @@ const ExamRoom = () => {
       <div className="exam-bottom-bar">
         <div className="candidate-mini-card">
           <b>{session.candidate.fullName}</b>
-          <span>SBD: {session.candidate.examNumber} • Hạng {session.candidate.licenseType}</span>
+          <span>SBD: {session.candidate.examNumber} - Hạng {session.candidate.licenseType}</span>
         </div>
         <div className="exam-progress"><span style={{ width: `${progress}%` }} /></div>
       </div>

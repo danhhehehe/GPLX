@@ -49,29 +49,57 @@ const ExamEntry = () => {
   const [checked, setChecked] = useState(false);
   const [showGuide, setShowGuide] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [setsLoading, setSetsLoading] = useState(false);
   const [starting, setStarting] = useState(false);
   const [error, setError] = useState('');
   const startingRef = useRef(false);
 
   useEffect(() => {
+    let active = true;
     licenseApi.getLicenses()
       .then((items) => {
+        if (!active) return;
         setLicenses(items);
         const routeLicense = licenseType ? String(licenseType).toUpperCase() : '';
         const first = items.find((item) => item.code === routeLicense) || items.find((item) => item.code === 'A1') || items[0];
         setCandidate((prev) => ({ ...prev, licenseType: first?.code || 'A1' }));
       })
-      .finally(() => setLoading(false));
-  }, []);
+      .catch((err) => {
+        if (active) setError(err.message || 'Không tải được danh sách hạng GPLX.');
+      })
+      .finally(() => {
+        if (active) setLoading(false);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [licenseType]);
 
   useEffect(() => {
-    if (!candidate.licenseType) return;
+    if (!candidate.licenseType) return undefined;
+    let active = true;
+    setSetsLoading(true);
     examApi.getExamSets(candidate.licenseType)
       .then((payload) => {
-        setExamSets(payload.data || []);
-        setSelectedSetId(payload.data?.[0]?.id || '');
+        if (!active) return;
+        const sets = payload.data || [];
+        setExamSets(sets);
+        setSelectedSetId(sets[0]?.id || '');
       })
-      .catch(() => setExamSets([]));
+      .catch((err) => {
+        if (!active) return;
+        setExamSets([]);
+        setSelectedSetId('');
+        setError(err.message || 'Không tải được bộ đề cố định.');
+      })
+      .finally(() => {
+        if (active) setSetsLoading(false);
+      });
+
+    return () => {
+      active = false;
+    };
   }, [candidate.licenseType]);
 
   const updateCandidate = (key, value) => {
@@ -82,23 +110,26 @@ const ExamEntry = () => {
 
   const checkCandidate = () => {
     const required = ['examNumber', 'licenseType', 'fullName', 'birthday', 'identityNumber', 'address'];
-    setChecked(required.every((key) => String(candidate[key] || '').trim()));
+    const valid = required.every((key) => String(candidate[key] || '').trim());
+    setChecked(valid);
+    setError(valid ? '' : 'Vui lòng nhập đủ thông tin thí sinh trước khi bắt đầu thi.');
   };
 
-  const canStartExam = checked && (mode !== 'fixed' || Boolean(selectedSetId));
+  const canStartExam = checked && !setsLoading && (mode !== 'fixed' || Boolean(selectedSetId));
 
   const startExam = async () => {
     if (!canStartExam || startingRef.current) return;
     startingRef.current = true;
     setStarting(true);
-    // clear any old session data to avoid reuse of expired timer
+    setError('');
+
     try {
       sessionStorage.removeItem('gplx_exam_session');
       sessionStorage.removeItem('gplx_exam_answers');
       sessionStorage.removeItem('gplx_exam_remaining');
       sessionStorage.removeItem('gplx_exam_result');
     } catch (err) {
-      // ignore storage errors
+      // Ignore storage errors.
     }
 
     try {
@@ -111,6 +142,8 @@ const ExamEntry = () => {
       sessionStorage.setItem('gplx_exam_session', JSON.stringify(payload));
       sessionStorage.setItem('gplx_exam_answers', JSON.stringify({}));
       navigate(`/exam/${candidate.licenseType}/session`);
+    } catch (err) {
+      setError(err.message || 'Không thể bắt đầu bài thi. Vui lòng thử lại.');
     } finally {
       startingRef.current = false;
       setStarting(false);
@@ -129,23 +162,35 @@ const ExamEntry = () => {
           licenses={licenses}
           examSets={examSets}
           mode={mode}
-          setMode={setMode}
+          setMode={(value) => {
+            setMode(value);
+            setError('');
+          }}
           selectedSetId={selectedSetId}
-          setSelectedSetId={setSelectedSetId}
+          setSelectedSetId={(value) => {
+            setSelectedSetId(value);
+            setError('');
+          }}
           onChange={updateCandidate}
           onRandomize={() => {
             setCandidate((prev) => randomCandidate(prev, licenses));
             setChecked(false);
+            setError('');
           }}
         />
+        {setsLoading && <p className="exam-inline-note">Đang tải bộ đề cố định...</p>}
+        {error && <p className="exam-error-message">{error}</p>}
         <div className="candidate-actions">
           <button className="exam-button" type="button" onClick={checkCandidate}>Kiểm tra thông tin thí sinh</button>
           <button className="exam-button" type="button" onClick={() => setShowGuide(true)}>Hướng dẫn</button>
           <button className="exam-button" type="button" onClick={() => {
             setCandidate(emptyCandidate);
             setChecked(false);
+            setError('');
           }}>Làm mới thông tin</button>
-          <button className="exam-button primary" type="button" disabled={!canStartExam || starting} onClick={startExam}>Bắt đầu thi</button>
+          <button className="exam-button primary" type="button" disabled={!canStartExam || starting} onClick={startExam}>
+            {starting ? 'Đang tạo đề...' : 'Bắt đầu thi'}
+          </button>
         </div>
         {checked && <CandidatePreview candidate={candidate} />}
       </div>
@@ -153,8 +198,8 @@ const ExamEntry = () => {
         <div className="exam-modal-backdrop">
           <div className="exam-modal">
             <h2>Hướng dẫn phím tắt</h2>
-            <p>Khi thi thật "Bạn hãy kiểm tra thông tin thí sinh trước khi bắt đầu thi!!!!"</p>
-            <p>Phím mũi tên để di chuyển câu hỏi. Phím 1,2,3,4 để chọn hoặc bỏ chọn đáp án.</p>
+            <p>Khi thi thật, bạn hãy kiểm tra thông tin thí sinh trước khi bắt đầu thi.</p>
+            <p>Phím mũi tên để di chuyển câu hỏi. Phím 1, 2, 3, 4 để chọn hoặc bỏ chọn đáp án.</p>
             <p>Enter hoặc Esc để mở xác nhận kết thúc bài thi. Sau khi kết thúc có thể xem đáp án.</p>
             <button className="btn primary" type="button" onClick={() => setShowGuide(false)}>Đã hiểu</button>
           </div>

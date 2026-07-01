@@ -116,6 +116,20 @@
   padding: 16px;
 }
 
+.exam-inline-note,
+.exam-error-message {
+  margin: 12px 0 0;
+  font-weight: 800;
+}
+
+.exam-inline-note {
+  color: var(--muted-color);
+}
+
+.exam-error-message {
+  color: var(--danger-color);
+}
+
 .exam-room-layout {
   width: min(1180px, calc(100% - 24px));
   margin: 0 auto;
@@ -202,6 +216,32 @@
 .exam-option.selected {
   background: var(--primary-soft-color);
   border-color: var(--primary-color);
+}
+
+.exam-option:disabled {
+  cursor: default;
+}
+
+.exam-option.review-correct-option {
+  background: var(--success-soft-color);
+  border-color: var(--success-color);
+}
+
+.exam-option.review-correct-option span {
+  background: var(--success-color);
+  border-color: var(--success-color);
+  color: var(--on-primary-color);
+}
+
+.exam-option.review-wrong-option {
+  background: var(--danger-soft-color);
+  border-color: var(--danger-color);
+}
+
+.exam-option.review-wrong-option span {
+  background: var(--danger-color);
+  border-color: var(--danger-color);
+  color: var(--on-primary-color);
 }
 
 .exam-sidebar {

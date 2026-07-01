@@ -75,6 +75,14 @@ const getB1QuestionNumbers = (license) => {
   )].sort((left, right) => left - right);
 };
 
+const getQuestionsForConfig = async (config) => {
+  const b1QuestionNumbers = config.licenseType === 'B1' ? getB1QuestionNumbers(config.license) : [];
+  const match = b1QuestionNumbers.length
+    ? { sourceTypes: 'all', questionNumber: { $in: b1QuestionNumbers } }
+    : questionMatchForLicense(config.licenseType);
+  return Question.find(match).sort({ questionNumber: 1, _id: 1 });
+};
+
 export const inferQuestionTopic = (question = {}) => {
   if (question.isPointDeduction || question.isCritical) return 'critical';
 
@@ -168,7 +176,7 @@ const takeQuestions = ({ grouped, topics, count, usedIds, licenseType, setIndex 
   const orderedPool = random ? shuffle(pool) : pool;
 
   if (orderedPool.length < count) {
-    throw new Error(`${licenseType}: topic ${topics.join('+')} thieu cau. Expected ${count}, received ${orderedPool.length}.`);
+    throw new Error(`${licenseType}: topic ${topics.join('+')} thiếu câu. Cần ${count}, hiện có ${orderedPool.length}.`);
   }
 
   const offset = random ? 0 : (setIndex * count) % orderedPool.length;
@@ -211,35 +219,35 @@ export const validateGeneratedExam = (questions = [], config, { label = 'random 
     const topic = inferQuestionTopic(question);
     if (topicCounts.has(topic)) topicCounts.set(topic, topicCounts.get(topic) + 1);
     if (!questionBelongsToLicense(question, config.licenseType)) {
-      errors.push(`${config.licenseType}: co cau khong thuoc hang ${config.licenseType}. Question ID: ${id}.`);
+      errors.push(`${config.licenseType}: có câu không thuộc hạng ${config.licenseType}. Question ID: ${id}.`);
     }
   }
 
   if (questions.length !== config.questionCount) {
-    errors.push(`${config.licenseType}: ${label} sai tong so cau. Expected ${config.questionCount}, received ${questions.length}.`);
+    errors.push(`${config.licenseType}: ${label} sai tổng số câu. Cần ${config.questionCount}, hiện có ${questions.length}.`);
   }
 
   for (const [id, count] of idCounts.entries()) {
-    if (count > 1) errors.push(`${config.licenseType}: ${label} trung cau. Question ID: ${id}.`);
+    if (count > 1) errors.push(`${config.licenseType}: ${label} trùng câu. Question ID: ${id}.`);
   }
 
   const criticalCount = questions.filter((question) => inferQuestionTopic(question) === 'critical' || question.isPointDeduction).length;
   if (criticalCount !== 1) {
-    errors.push(`${config.licenseType}: ${label} co ${criticalCount} cau diem liet. Expected 1.`);
+    errors.push(`${config.licenseType}: ${label} có ${criticalCount} câu điểm liệt. Cần 1.`);
   }
 
   for (const [topic, expected] of Object.entries(config.quota || {})) {
     if (topic === 'techniqueOrConstruction') {
       const received = (topicCounts.get('technique') || 0) + (topicCounts.get('construction') || 0);
       if (received !== expected) {
-        errors.push(`${config.licenseType}: topic techniqueOrConstruction sai quota. Expected ${expected}, received ${received}.`);
+        errors.push(`${config.licenseType}: topic techniqueOrConstruction sai quota. Cần ${expected}, hiện có ${received}.`);
       }
       continue;
     }
 
     const received = topic === 'critical' ? criticalCount : (topicCounts.get(topic) || 0);
     if (received !== expected) {
-      errors.push(`${config.licenseType}: topic ${topic} (${topicLabels[topic] || topic}) sai quota. Expected ${expected}, received ${received}.`);
+      errors.push(`${config.licenseType}: topic ${topic} (${topicLabels[topic] || topic}) sai quota. Cần ${expected}, hiện có ${received}.`);
     }
   }
 
@@ -254,14 +262,10 @@ export const validateGeneratedExam = (questions = [], config, { label = 'random 
 
 export const generateRandomExam = async (licenseType = 'A1') => {
   const config = await getLicenseConfig(licenseType);
-  const b1QuestionNumbers = config.licenseType === 'B1' ? getB1QuestionNumbers(config.license) : [];
-  const match = b1QuestionNumbers.length
-    ? { sourceTypes: 'all', questionNumber: { $in: b1QuestionNumbers } }
-    : questionMatchForLicense(config.licenseType);
-  const questions = await Question.find(match).sort({ questionNumber: 1, _id: 1 });
+  const questions = await getQuestionsForConfig(config);
 
   if (!questions.length) {
-    throw new Error(`${config.licenseType}: khong co du lieu cau hoi cho hang nay.`);
+    throw new Error(`${config.licenseType}: không có dữ liệu câu hỏi cho hạng này.`);
   }
 
   const selected = selectQuestionsByQuota({ questions, config, random: true });
@@ -309,8 +313,23 @@ export const createExamSession = async ({ licenseType = 'A1', mode = 'random', s
     const fixedQuestions = await Question.find({ _id: { $in: selectedSet.questionIds } });
     const order = new Map(selectedSet.questionIds.map((id, index) => [String(id), index]));
     fixedQuestions.sort((a, b) => order.get(String(a._id)) - order.get(String(b._id)));
-    validateGeneratedExam(fixedQuestions, config, { label: selectedSet.code });
-    selectedIds = fixedQuestions.map((question) => question._id);
+    try {
+      validateGeneratedExam(fixedQuestions, config, { label: selectedSet.code });
+      selectedIds = fixedQuestions.map((question) => question._id);
+    } catch (error) {
+      const match = selectedSet.code.match(/-SET-(\d{2})$/i);
+      const setIndex = Math.max(Number(match?.[1] || 1) - 1, 0);
+      const questions = await getQuestionsForConfig(config);
+      const repairedQuestions = selectQuestionsByQuota({ questions, config, setIndex, random: false });
+      validateGeneratedExam(repairedQuestions, config, { label: selectedSet.code });
+      selectedIds = repairedQuestions.map((question) => question._id);
+      selectedSet.questionIds = selectedIds;
+      selectedSet.questionHashes = repairedQuestions.map((question) => question.questionHash);
+      selectedSet.questionCount = config.questionCount;
+      selectedSet.durationMinutes = config.durationMinutes;
+      selectedSet.passingScore = config.passingScore;
+      await selectedSet.save();
+    }
   } else {
     const randomExam = await generateRandomExam(config.licenseType);
     selectedIds = randomExam.questions.map((question) => question._id);
@@ -325,7 +344,7 @@ export const createExamSession = async ({ licenseType = 'A1', mode = 'random', s
     license: config.license,
     mode,
     setId: selectedSet?.code || setId || null,
-    setName: selectedSet?.name || (mode === 'random' ? 'Ngau nhien' : null),
+    setName: selectedSet?.name || (mode === 'random' ? 'Ngẫu nhiên' : null),
     durationMinutes: selectedSet?.durationMinutes ?? config.durationMinutes,
     questionCount: selectedSet?.questionCount ?? config.questionCount,
     passingScore: selectedSet?.passingScore ?? config.passingScore,
@@ -403,8 +422,8 @@ export const gradeExam = async (answers = [], licenseType = 'A1', candidate = {}
       hasWrongPointDeduction,
       hasPointDeductionWrong: hasWrongPointDeduction,
       passed,
-      failureReason: hasWrongPointDeduction ? 'Khong dat do sai cau diem liet' : '',
-      statusText: passed ? 'DAT' : 'KHONG DAT'
+      failureReason: hasWrongPointDeduction ? 'Không đạt do sai câu điểm liệt' : '',
+      statusText: passed ? 'ĐẠT' : 'KHÔNG ĐẠT'
     },
     passed,
     passScore: config.passingScore,
@@ -424,11 +443,7 @@ export const seedExamSets = async () => {
 
   for (const license of licenses) {
     const config = await getLicenseConfig(license.code);
-    const b1QuestionNumbers = config.licenseType === 'B1' ? getB1QuestionNumbers(config.license) : [];
-    const match = b1QuestionNumbers.length
-      ? { sourceTypes: 'all', questionNumber: { $in: b1QuestionNumbers } }
-      : questionMatchForLicense(config.licenseType);
-    const questions = await Question.find(match).sort({ questionNumber: 1, _id: 1 });
+    const questions = await getQuestionsForConfig(config);
     if (!questions.length) continue;
 
     const operations = [];
@@ -444,7 +459,7 @@ export const seedExamSets = async () => {
           update: {
             $set: {
               code,
-              name: `Bo de co dinh ${String(index).padStart(2, '0')}`,
+              name: `Bộ đề cố định ${String(index).padStart(2, '0')}`,
               licenseType: license.code,
               questionIds: selected.map((question) => question._id),
               questionHashes: selected.map((question) => question.questionHash),

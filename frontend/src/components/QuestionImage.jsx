@@ -11,7 +11,7 @@ const normalizeImageSrc = (src) => {
   return encodeURI(`${SOURCE_BASE_URL}/${value.replace(/^\/+/, '')}`);
 };
 
-const QuestionImage = ({ src, alt = 'Anh cau hoi GPLX' }) => {
+const QuestionImage = ({ src, alt = 'Ảnh câu hỏi GPLX' }) => {
   const imageSrc = useMemo(() => normalizeImageSrc(src), [src]);
   const [loaded, setLoaded] = useState(false);
   const [failed, setFailed] = useState(false);
@@ -36,7 +36,7 @@ const QuestionImage = ({ src, alt = 'Anh cau hoi GPLX' }) => {
           onError={() => setFailed(true)}
         />
       )}
-      {failed && <div className="image-fallback">Khong tai duoc anh cau hoi</div>}
+      {failed && <div className="image-fallback">Không tải được ảnh câu hỏi</div>}
     </div>
   );
 };

@@ -10,7 +10,7 @@ export const EXAM_TOPIC_KEYS = [
 
 export const examConfig = {
   A1: {
-    label: 'Hang A1',
+    label: 'Hạng A1',
     bankSize: 250,
     totalQuestions: 25,
     durationMinutes: 19,
@@ -25,7 +25,7 @@ export const examConfig = {
     }
   },
   A: {
-    label: 'Hang A',
+    label: 'Hạng A',
     bankSize: 250,
     totalQuestions: 25,
     durationMinutes: 19,
@@ -40,7 +40,7 @@ export const examConfig = {
     }
   },
   B1: {
-    label: 'Hang B1',
+    label: 'Hạng B1',
     bankSize: 300,
     totalQuestions: 25,
     durationMinutes: 19,
@@ -55,7 +55,7 @@ export const examConfig = {
     }
   },
   B: {
-    label: 'Hang B',
+    label: 'Hạng B',
     bankSize: 600,
     totalQuestions: 30,
     durationMinutes: 20,
@@ -71,7 +71,7 @@ export const examConfig = {
     }
   },
   C1: {
-    label: 'Hang C1',
+    label: 'Hạng C1',
     bankSize: 600,
     totalQuestions: 35,
     durationMinutes: 22,
@@ -87,7 +87,7 @@ export const examConfig = {
     }
   },
   C: {
-    label: 'Hang C',
+    label: 'Hạng C',
     bankSize: 600,
     totalQuestions: 40,
     durationMinutes: 24,
@@ -103,7 +103,7 @@ export const examConfig = {
     }
   },
   D: {
-    label: 'Hang D1, D2, D',
+    label: 'Hạng D1, D2, D',
     bankSize: 600,
     totalQuestions: 45,
     durationMinutes: 26,
@@ -164,11 +164,11 @@ export const getLicenseQuestionDefaults = (licenseType = 'A1') => {
 };
 
 export const topicLabels = {
-  rules: 'Quy dinh chung va quy tac giao thong',
-  critical: 'Cau diem liet',
-  culture: 'Van hoa giao thong',
-  technique: 'Ky thuat lai xe',
-  construction: 'Cau tao va sua chua',
-  signs: 'Bien bao',
-  situations: 'Sa hinh va xu ly tinh huong'
+  rules: 'Quy định chung và quy tắc giao thông',
+  critical: 'Câu điểm liệt',
+  culture: 'Văn hóa giao thông',
+  technique: 'Kỹ thuật lái xe',
+  construction: 'Cấu tạo và sửa chữa',
+  signs: 'Biển báo',
+  situations: 'Sa hình và xử lý tình huống'
 };
