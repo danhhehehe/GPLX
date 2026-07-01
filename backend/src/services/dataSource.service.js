@@ -261,18 +261,11 @@ export const getTrafficSignsWithFallback = async (query = {}) => {
   }
 
   try {
-    const signs = await fetchAndSaveTrafficSigns();
-    const operations = signs.map((sign) => ({
-      updateOne: {
-        filter: sign.code ? { code: sign.code } : { signHash: sign.signHash },
-        update: { $set: sign },
-        upsert: true
-      }
-    }));
-    await TrafficSign.bulkWrite(operations, { ordered: false });
-    await saveLocalBackup('traffic-signs', signs);
-    await setStatus({ sourceName: 'Traffic Signs', sourceUrl: REMOTE_CONFIG.trafficSigns.url, type: 'traffic-signs', status: 'success', totalRecords: signs.length, isUsingFallback: false });
-    return { source: 'remote-api', data: await TrafficSign.find({}).sort({ groupSlug: 1, code: 1 }), isStale: false };
+    const result = await seedTrafficSigns();
+    const saved = await TrafficSign.find(query).sort({ groupSlug: 1, code: 1 });
+    await saveLocalBackup('traffic-signs', saved);
+    await setStatus({ sourceName: 'Traffic Signs', sourceUrl: result.source || REMOTE_CONFIG.trafficSigns.url, type: 'traffic-signs', status: 'success', totalRecords: saved.length, isUsingFallback: result.source === 'local-fallback' });
+    return { source: result.source || 'remote-api', data: saved, isStale: false };
   } catch (error) {
     await setStatus({ sourceName: 'Traffic Signs', sourceUrl: REMOTE_CONFIG.trafficSigns.url, type: 'traffic-signs', status: 'failed', errorMessage: error.message, isUsingFallback: true });
     return { source: 'error', data: [], error: 'MongoDB không có dữ liệu và API nguồn đang lỗi.' };
@@ -305,18 +298,11 @@ export const refreshQuestionsFromRemote = async () => {
 };
 
 export const refreshTrafficSignsFromRemote = async () => {
-  const signs = await fetchAndSaveTrafficSigns();
-  const operations = signs.map((sign) => ({
-    updateOne: {
-      filter: sign.code ? { code: sign.code } : { signHash: sign.signHash },
-      update: { $set: sign },
-      upsert: true
-    }
-  }));
-  await TrafficSign.bulkWrite(operations, { ordered: false });
+  const result = await seedTrafficSigns();
+  const signs = await TrafficSign.find({}).sort({ groupSlug: 1, code: 1 });
   await saveLocalBackup('traffic-signs', signs);
-  await setStatus({ sourceName: 'Traffic Signs', sourceUrl: REMOTE_CONFIG.trafficSigns.url, type: 'traffic-signs', status: 'success', totalRecords: signs.length, isUsingFallback: false });
-  return { source: 'remote-api', refreshCount: signs.length };
+  await setStatus({ sourceName: 'Traffic Signs', sourceUrl: result.source || REMOTE_CONFIG.trafficSigns.url, type: 'traffic-signs', status: 'success', totalRecords: signs.length, isUsingFallback: result.source === 'local-fallback' });
+  return { source: result.source || 'remote-api', refreshCount: signs.length, result };
 };
 
 export const refreshLicensesFromRemote = async () => {
