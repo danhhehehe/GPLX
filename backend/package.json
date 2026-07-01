@@ -10,6 +10,7 @@
     "start:prod": "node src/server.js",
     "audit": "npm audit",
     "seed": "node src/scripts/seed.js",
+    "seed:all": "node src/scripts/seed-all.js",
     "seed:traffic-signs": "node src/scripts/seed-traffic-signs.js",
     "seed:licenses": "node src/scripts/seed-licenses.js",
     "seed:exam-sets": "node src/scripts/seed-exam-sets.js",
