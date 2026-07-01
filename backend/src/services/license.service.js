@@ -2,6 +2,7 @@ import axios from 'axios';
 import vm from 'vm';
 import LicenseClass from '../models/LicenseClass.js';
 import { fallbackLicenses } from './license.seed-data.js';
+import { getLicenseQuestionDefaults } from '../config/exam.config.js';
 
 const LICENSE_CONFIG_URL = process.env.LICENSE_CONFIG_URL || 'https://onthigplx.edu.vn/data/b1-question-config.js?v=20250803';
 
@@ -20,6 +21,16 @@ const normalizeLicense = (raw, index = 0, sourceUrl = 'fallback') => ({
   sourceUrl,
   rawData: raw.rawData || raw
 });
+
+const applyOfficialExamDefaults = (license) => {
+  const defaults = getLicenseQuestionDefaults(license.code);
+  return {
+    ...license,
+    questionCount: defaults.questionCount,
+    passingScore: defaults.passingScore,
+    durationMinutes: defaults.durationMinutes
+  };
+};
 
 const b1FromConfig = (config, sourceUrl) => {
   if (!config || typeof config !== 'object') return null;
@@ -104,13 +115,14 @@ export const seedLicenses = async () => {
     console.warn(`[licenses] Cannot fetch/parse source config: ${error.message}`);
   }
 
-  const fallback = fallbackLicenses.map((item, index) => normalizeLicense(item, index, 'fallback'));
+  const fallback = fallbackLicenses.map((item, index) => applyOfficialExamDefaults(normalizeLicense(item, index, 'fallback')));
   const merged = new Map(fallback.map((item) => [item.code, item]));
 
   for (const item of parsed) {
+    const normalized = applyOfficialExamDefaults(item);
     merged.set(item.code, {
       ...(merged.get(item.code) || {}),
-      ...item,
+      ...normalized,
       sourceUrl,
       isActive: true
     });

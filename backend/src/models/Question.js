@@ -20,7 +20,8 @@ const questionSchema = new mongoose.Schema(
     question: { type: String, required: true, trim: true },
     normalizedQuestion: { type: String, required: true, index: true },
     questionHash: { type: String, required: true, unique: true, index: true },
-    category: { type: String, default: 'Chưa phân loại', index: true },
+    category: { type: String, default: 'Chua phan loai', index: true },
+    topic: { type: String, default: '', index: true },
     licenseTypes: [{ type: String, index: true }],
     isPointDeduction: { type: Boolean, default: false, index: true },
     examFormat: { type: String, default: '' },
@@ -37,7 +38,7 @@ const questionSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-questionSchema.index({ question: 'text', normalizedQuestion: 'text', category: 'text', topics: 'text' });
+questionSchema.index({ question: 'text', normalizedQuestion: 'text', category: 'text', topic: 'text', topics: 'text' });
 
 const Question = mongoose.model('Question', questionSchema);
 

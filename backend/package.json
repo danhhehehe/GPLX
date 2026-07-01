@@ -14,6 +14,7 @@
     "seed:traffic-signs": "node src/scripts/seed-traffic-signs.js",
     "seed:licenses": "node src/scripts/seed-licenses.js",
     "seed:exam-sets": "node src/scripts/seed-exam-sets.js",
+    "validate:exams": "node src/scripts/validate-exams.js",
     "fix:duplicates": "node src/scripts/fix-duplicates.js"
   },
   "dependencies": {

@@ -1,6 +1,7 @@
 import axios from 'axios';
 import Question from '../models/Question.js';
 import { fixDuplicateQuestions } from './question-dedupe.service.js';
+import { inferQuestionTopic } from './exam.service.js';
 import { createQuestionHash, normalizeText, uniqueArray } from '../utils/question-dedupe.js';
 
 const SOURCE_BASE_URL = 'https://onthigplx.edu.vn';
@@ -11,8 +12,28 @@ export const normalizeImageUrl = (image) => {
   if (!image) return null;
   const value = String(image).trim();
   if (!value) return null;
-  if (value.startsWith('http')) return value;
-  return `${SOURCE_BASE_URL}/${value.replace(/^\/+/, '')}`;
+  if (/^data:/i.test(value)) return value;
+  if (/^https?:\/\//i.test(value)) return encodeURI(value);
+  return encodeURI(`${SOURCE_BASE_URL}/${value.replace(/^\/+/, '')}`);
+};
+
+const pickImage = (raw = {}) => {
+  const media = raw.media || raw.picture || raw.photo;
+  if (typeof media === 'string') return media;
+  if (media && typeof media === 'object') {
+    return media.url || media.src || media.path || media.image || null;
+  }
+
+  return raw.image
+    || raw.imageUrl
+    || raw.img
+    || raw.src
+    || raw.thumbnail
+    || raw.imagePath
+    || raw.image_url
+    || raw.questionImage
+    || raw.question_image
+    || null;
 };
 
 const toArray = (value) => {
@@ -58,6 +79,16 @@ const normalizeCorrectAnswer = (raw) => {
   return String(value).trim().toLowerCase().replace(/[^a-d,|;/]/g, '');
 };
 
+const defaultLicenseTypesForSource = (sourceType, questionNumber) => {
+  if (sourceType === 'a1') return ['A1', 'A'];
+  if (sourceType === 'all') {
+    const number = Number(questionNumber);
+    const base = ['B', 'C1', 'C', 'D', 'D1', 'D2', 'BE', 'C1E', 'CE', 'D1E', 'D2E', 'DE'];
+    return Number.isFinite(number) && number <= 300 ? ['B1', ...base] : base;
+  }
+  return [];
+};
+
 const getSourceQuestionId = (raw, questionNumber, question) => (
   String(raw.id ?? raw.questionId ?? raw.questionNumber ?? raw.no ?? questionNumber ?? normalizeText(question))
 );
@@ -65,8 +96,8 @@ const getSourceQuestionId = (raw, questionNumber, question) => (
 export const normalizeQuestion = (raw, sourceType) => {
   const id = Number(raw.id ?? raw.questionId ?? raw.questionNumber);
   const questionNumber = Number(raw.questionNumber ?? raw.number ?? raw.no ?? id);
-  const image = raw.image || raw.imagePath || raw.image_url || null;
-  const imageUrl = normalizeImageUrl(raw.imageUrl || image);
+  const image = pickImage(raw);
+  const imageUrl = normalizeImageUrl(image);
   const question = raw.question || raw.content || raw.title || raw.text || '';
   const correctAnswer = normalizeCorrectAnswer(raw);
   const sourceQuestionId = getSourceQuestionId(raw, Number.isFinite(questionNumber) ? questionNumber : undefined, question);
@@ -79,6 +110,14 @@ export const normalizeQuestion = (raw, sourceType) => {
     console.warn(`[seed] Question ${sourceType}:${sourceQuestionId} hasImage=true but image is missing.`);
   }
 
+  const licenseTypes = uniqueArray(
+    raw.licenseTypes,
+    raw.licenses,
+    raw.license,
+    raw.type,
+    defaultLicenseTypesForSource(sourceType, questionNumber)
+  );
+
   const normalized = {
     sourceType,
     sourceTypes: [sourceType],
@@ -86,7 +125,7 @@ export const normalizeQuestion = (raw, sourceType) => {
     sourceKey: `${sourceType}:${sourceQuestionId}`,
     questionNumber: Number.isFinite(questionNumber) ? questionNumber : undefined,
     category: raw.category || raw.chapter || raw.group || 'Chưa phân loại',
-    licenseTypes: uniqueArray(raw.licenseTypes, raw.licenses, raw.license, raw.type),
+    licenseTypes,
     isPointDeduction: Boolean(raw.isPointDeduction ?? raw.pointDeduction ?? raw.isDanger ?? raw.required),
     examFormat: raw.examFormat || raw.format || '',
     question,
@@ -102,6 +141,8 @@ export const normalizeQuestion = (raw, sourceType) => {
     topics: toArray(raw.topics || raw.topic)
   };
 
+  normalized.topic = raw.topic || inferQuestionTopic(normalized) || '';
+  normalized.topics = uniqueArray(normalized.topics, normalized.topic);
   normalized.questionHash = createQuestionHash(normalized);
   return normalized;
 };
@@ -141,6 +182,7 @@ const mergeByHash = (questions) => {
       sourceType: current.sourceType || question.sourceType,
       sourceTypes: uniqueArray(current.sourceTypes, question.sourceTypes),
       licenseTypes: uniqueArray(current.licenseTypes, question.licenseTypes),
+      topic: current.topic || question.topic,
       topics: uniqueArray(current.topics, question.topics),
       references: uniqueArray(current.references, question.references),
       isPointDeduction: current.isPointDeduction || question.isPointDeduction,
@@ -170,6 +212,7 @@ const upsertQuestions = async (questions) => {
           normalizedQuestion: question.normalizedQuestion,
           questionHash: question.questionHash,
           category: question.category,
+          topic: question.topic,
           examFormat: question.examFormat,
           options: question.options,
           correctAnswer: question.correctAnswer,

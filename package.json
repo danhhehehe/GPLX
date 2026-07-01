@@ -10,6 +10,7 @@
     "seed:traffic-signs": "npm run seed:traffic-signs --prefix backend",
     "seed:licenses": "npm run seed:licenses --prefix backend",
     "seed:exam-sets": "npm run seed:exam-sets --prefix backend",
+    "validate:exams": "npm run validate:exams --prefix backend",
     "fix:duplicates": "npm run fix:duplicates --prefix backend",
     "audit": "npm audit --prefix backend && npm audit --prefix frontend"
   },

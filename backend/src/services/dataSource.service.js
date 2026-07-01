@@ -95,6 +95,7 @@ const saveQuestionsToMongo = async (questions) => {
           normalizedQuestion: question.normalizedQuestion,
           questionHash: question.questionHash,
           category: question.category,
+          topic: question.topic,
           examFormat: question.examFormat,
           options: question.options,
           correctAnswer: question.correctAnswer,
@@ -146,16 +147,18 @@ const fetchAndSaveQuestions = async () => {
     fetchRemoteJson(primaryUrl).catch((error) => { throw new Error(`All questions source failed: ${error.message}`); })
   ]);
 
-  const rawQuestions = [a1Data, allData].flatMap((payload) => {
+  const pickItems = (payload) => {
     if (!payload) return [];
     if (Array.isArray(payload)) return payload;
     if (payload.questions) return payload.questions;
     if (payload.data) return payload.data;
     return [];
-  });
+  };
 
-  const normalized = rawQuestions
-    .map((item) => normalizeQuestion(item, 'remote'))
+  const normalized = [
+    ...pickItems(a1Data).map((item) => normalizeQuestion(item, 'a1')),
+    ...pickItems(allData).map((item) => normalizeQuestion(item, 'all'))
+  ]
     .filter(Boolean);
 
   const merged = new Map();
@@ -169,6 +172,7 @@ const fetchAndSaveQuestions = async () => {
       ...existing,
       sourceTypes: uniqueArray(existing.sourceTypes, question.sourceTypes),
       licenseTypes: uniqueArray(existing.licenseTypes, question.licenseTypes),
+      topic: existing.topic || question.topic,
       topics: uniqueArray(existing.topics, question.topics),
       references: uniqueArray(existing.references, question.references),
       hasImage: existing.hasImage || question.hasImage,
