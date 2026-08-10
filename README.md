@@ -1,94 +1,137 @@
-# Ôn thi GPLX
+# GPLX — Open-Source Vietnamese Driving License Learning Platform
 
-Dự án full-stack cho website ôn thi GPLX. Frontend chỉ gọi backend; backend chịu trách nhiệm seed, normalize, chống trùng, thống kê, tạo đề thi và chấm điểm.
+GPLX is an open-source full-stack learning platform for Vietnamese driving-license theory and road-safety practice. It combines structured question practice, critical-question training, traffic-sign learning, license-specific mock exams, scoring, statistics, and a reusable backend API.
 
-## Stack
+The project is designed as both a learner-facing website and a maintainable software/data pipeline: the frontend consumes the backend API, while the backend handles import, normalization, duplicate detection, validation, exam generation, and scoring.
 
-- Frontend: React, Vite, Axios, React Router DOM
-- Backend: Node.js, Express, Mongoose
-- Database local: `mongodb://127.0.0.1:27017/gplx_db`
+> **Project status:** active early-stage development. Interfaces, datasets, and deployment details may change before a stable release.
 
-## Nguồn dữ liệu
+## Highlights
 
-```txt
-https://onthigplx.edu.vn/data/a-a1-questions/a-a1-questions.json
-https://onthigplx.edu.vn/data/questions/all-questions.json
-https://onthigplx.edu.vn/traffic-signs.html
-https://onthigplx.edu.vn/js/traffic-signs-data.js
-https://onthigplx.edu.vn/data/b1-question-config.js?v=20250803
+- Practice by license class and question category
+- Critical / point-deduction question practice
+- Questions with images and explanations
+- Traffic-sign browser and grouped sign data
+- License-specific mock exam generation and scoring
+- Statistics endpoints and learning-oriented views
+- MongoDB-backed normalized data model
+- SHA-256-based duplicate handling during question import
+- Separate React/Vite frontend and Node/Express backend
+- GitHub Pages frontend deployment workflow
+- Security middleware including Helmet, rate limiting, validation, and Mongo query sanitization
+
+## Current verified dataset snapshot
+
+The project's current seed/validation workflow reports:
+
+```text
+questions: 600
+A/A1: 250
+all: 600
+critical questions: 60
+questions with images: 318
+traffic signs: 231
+traffic-sign groups: 5
+license classes: 15
 ```
 
-Backend không fetch thư mục ảnh `/data/images/n600/` vì thư mục này bị 403. Ảnh câu hỏi chỉ lấy từ field `image` trong JSON và được normalize thành URL đầy đủ.
+These counts describe a current project snapshot, not a guarantee about future upstream datasets.
 
-## Cài Đặt
+## Architecture
+
+```text
+Browser
+  ↓
+React + Vite frontend
+  ↓ HTTP/JSON
+Node.js + Express API
+  ↓
+Mongoose
+  ↓
+MongoDB
+```
+
+See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for more detail.
+
+## Tech stack
+
+- **Frontend:** React, Vite, Axios, React Router
+- **Backend:** Node.js, Express, Mongoose
+- **Database:** MongoDB
+- **CI/CD:** GitHub Actions, GitHub Pages
+
+## Quick start
+
+### Requirements
+
+- Node.js 20+
+- npm
+- MongoDB available locally or through a configured connection string
+
+### Install
+
+macOS/Linux:
 
 ```bash
-copy backend\.env.example backend\.env
-copy frontend\.env.example frontend\.env
-
+cp backend/.env.example backend/.env
+cp frontend/.env.example frontend/.env
 npm install
 npm run install:all
 ```
 
-## Seed Và Sửa Dữ Liệu
+Windows Command Prompt:
+
+```bat
+copy backend\.env.example backend\.env
+copy frontend\.env.example frontend\.env
+npm install
+npm run install:all
+```
+
+### Run development servers
 
 ```bash
-cd backend
+npm run dev
+```
+
+Default local services:
+
+```text
+Backend:  http://localhost:5000
+Frontend: http://localhost:5173
+MongoDB:  mongodb://127.0.0.1:27017/gplx_db
+```
+
+## Data import and validation
+
+Useful backend commands include:
+
+```bash
 npm run seed
-npm run fix:duplicates
+npm run seed:all
 npm run seed:traffic-signs
 npm run seed:licenses
 npm run seed:exam-sets
+npm run validate:exams
+npm run fix:duplicates
 ```
 
-- `npm run seed`: import câu hỏi A/A1 và all, tạo `questionHash` bằng SHA256, merge câu trùng theo nội dung câu hỏi + đáp án, merge `sourceTypes`, `licenseTypes`, `topics`, giữ ảnh và trạng thái điểm liệt.
-- `npm run fix:duplicates`: dọn dữ liệu trùng đã tồn tại trong MongoDB, merge bản tốt nhất và xóa bản dư.
-- `npm run seed:traffic-signs`: lấy dữ liệu thật từ `traffic-signs-data.js`, normalize ảnh biển báo và seed collection `traffic_signs`.
-- `npm run seed:licenses`: fetch/parse config hạng bằng lái, lưu collection `license_classes`; nếu config chỉ có B1 hoặc không parse được thì merge fallback để web vẫn có đủ hạng.
-- `npm run seed:exam-sets`: tạo 20 bộ đề cố định cho từng hạng có dữ liệu câu hỏi.
+The importer normalizes records, creates SHA-256-based identifiers for duplicate handling, merges compatible metadata, normalizes image URLs, and prepares collections used by the application.
 
-Số liệu kiểm tra hiện tại:
+### Data provenance
 
-```txt
-questions: 600
-A/A1: 250
-all: 600
-câu điểm liệt: 60
-câu có ảnh: 318
-traffic_signs: 231
-nhóm biển báo: 5
-license_classes: 15
-```
+GPLX references external learning-data sources. **The MIT license in this repository covers GPLX-maintained software; it does not automatically grant rights to third-party datasets, images, trademarks, or website content.**
 
-## Chạy Dev
+See [docs/DATA_SOURCES.md](docs/DATA_SOURCES.md) before redistributing imported data or adding a new source.
 
-Backend:
+Currently referenced upstream resources include content hosted by `onthigplx.edu.vn`. Their availability and applicable terms are controlled by the upstream publisher, not this repository.
 
-```bash
-cd backend
-npm run dev
-```
+## Main API surface
 
-Frontend:
+### Questions
 
-```bash
-cd frontend
-npm run dev
-```
-
-Mặc định:
-
-```txt
-Backend:  http://localhost:5000
-Frontend: http://localhost:5173
-```
-
-## API Chính
-
-Questions:
-
-```txt
-GET /api/questions?page=1&limit=20&licenseType=B&category=...&isPointDeduction=true&keyword=...&mode=practice
+```text
+GET /api/questions
 GET /api/questions/a1
 GET /api/questions/all
 GET /api/questions/:id
@@ -101,9 +144,9 @@ GET /api/questions/image-check
 GET /api/questions/statistics
 ```
 
-Exam:
+### Exams
 
-```txt
+```text
 GET  /api/exam/a1
 GET  /api/exam/:licenseType
 GET  /api/exam/sets?licenseType=A1
@@ -111,28 +154,28 @@ POST /api/exam/create
 POST /api/exam/submit
 ```
 
-Traffic signs:
+### Traffic signs
 
-```txt
-GET /api/traffic-signs?page=1&limit=50&group=...&keyword=...
+```text
+GET /api/traffic-signs
 GET /api/traffic-signs/groups
 GET /api/traffic-signs/statistics
 GET /api/traffic-signs/:code
 GET /api/traffic-signs/group/:groupSlug
 ```
 
-Licenses:
+### License classes
 
-```txt
+```text
 GET  /api/licenses
 GET  /api/licenses/statistics
 GET  /api/licenses/:code
 POST /api/licenses/refresh
 ```
 
-## Frontend Routes
+## Frontend routes
 
-```txt
+```text
 /
 /licenses
 /questions
@@ -148,4 +191,27 @@ POST /api/licenses/refresh
 /statistics
 ```
 
-`/questions` và `/point-deduction` cho phép chọn đáp án trực tiếp trên từng câu, báo đúng/sai, hiển thị đáp án đúng và giải thích. `/exam` cho chọn hạng bằng lái trước khi thi, còn `/exam/B`, `/exam/C1`, `/exam/C` tạo đề theo hạng tương ứng.
+## Open-source maintenance goals
+
+GPLX aims to improve reliability and maintainability through automated checks, reproducible validation, tests for exam/scoring behavior, explicit data provenance, accessible learning flows, and human-reviewed contributions.
+
+The public roadmap is in [ROADMAP.md](ROADMAP.md).
+
+## Contributing
+
+Contributions are welcome, especially for:
+
+- bug fixes and regression tests;
+- API and architecture documentation;
+- accessibility improvements;
+- exam-generation and scoring validation;
+- data-quality/provenance tooling;
+- deployment and reliability improvements.
+
+Please read [CONTRIBUTING.md](CONTRIBUTING.md) before opening a pull request. Security issues should follow [SECURITY.md](SECURITY.md).
+
+## License
+
+GPLX-maintained source code is licensed under the [MIT License](LICENSE).
+
+Third-party datasets and media remain subject to their own rights and terms. See [docs/DATA_SOURCES.md](docs/DATA_SOURCES.md).
